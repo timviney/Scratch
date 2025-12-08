@@ -1,8 +1,8 @@
-﻿namespace WebApplication1;
+﻿namespace WebApplication1.ProductRepository;
 
-public class ProductService
+public class InMemoryProductRepository : IProductRepository
 {
-    List<Product> _products = new();
+    private readonly List<Product> _products = [];
     
     private int _nextId = 0;
     private int NextId()
@@ -10,8 +10,11 @@ public class ProductService
         return Interlocked.Increment(ref _nextId);
     }
     
-    public IEnumerable<Product> GetProducts() => _products;
-    
+    public IEnumerable<Product> GetProducts()
+    {
+        return _products;
+    }
+
     public Product RegisterProduct(string name, double price)
     {
         var product = new Product(NextId(), name, price);
@@ -19,7 +22,10 @@ public class ProductService
         return product;
     }
 
-    public Product? GetProduct(int id) => GetProducts().FirstOrDefault(p => p.Id == id); //obviously slow, would hash for faster retrieval IRL
+    public Product? GetProduct(int id)
+    {
+        return _products.FirstOrDefault(p => p.Id == id); //obvs slow, would hash IRL
+    }
 
     public Product? DeleteProduct(int id)
     {
