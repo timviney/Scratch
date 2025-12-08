@@ -1,11 +1,11 @@
-﻿using WebApplication1.ProductRepository;
+﻿using WebApplication1.Repositories;
 
-namespace WebApplication1;
+namespace WebApplication1.Products;
 
-public class ProductService(IProductRepository repository)
+public class ProductService(IRepository<Product> repository)
 {
-    public IEnumerable<Product> GetProducts() => repository.GetProducts();
-    public Product RegisterProduct(string name, double price) => repository.RegisterProduct(name, price);
-    public Product? GetProduct(int id) => repository.GetProduct(id);
-    public Product? DeleteProduct(int id) => repository.DeleteProduct(id);
+    public IEnumerable<Product> GetProducts() => repository.GetAll();
+    public Product RegisterProduct(ProductDto product) => repository.Add(product);
+    public Product? GetProduct(int id) => repository.Get(id);
+    public Product? DeleteProduct(int id) => repository.Delete(id);
 }
