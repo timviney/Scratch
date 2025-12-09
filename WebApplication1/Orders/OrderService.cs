@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using WebApplication1.Orders.ExternalOrderRecordingService;
 using WebApplication1.Repositories;
 
 namespace WebApplication1.Orders;
@@ -7,7 +8,7 @@ namespace WebApplication1.Orders;
 public class OrderService(IRepository<Order> orderRepository) : BackgroundService
 {
     private readonly ConcurrentQueue<Order> _orders = new();
-    private readonly List<OrderResult> _filledOrders = new();
+    private readonly List<ExternalSystemOrderRecord> _filledOrders = new();
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -22,13 +23,16 @@ public class OrderService(IRepository<Order> orderRepository) : BackgroundServic
         }
     }
 
-    private void FillOrder(Order orderToBeFilled)
+    private void FillOrder(Order order)
     {
-        var filled = orderToBeFilled.ShippingMethod.FillOrder(orderToBeFilled);
-        _filledOrders.Add(filled);
+        // here we use an adapter to record our data on an "external service"
+        var orderRecorder = new OrderResultsAdapter(order, order.ShippingMethod.Calculate(order));
+        
+        var recordedOrder = ExternalOrderRecordingService.ExternalService.FillOrder(orderRecorder);
+        _filledOrders.Add(recordedOrder);
     }
     
-    public List<OrderResult> FilledOrders() => _filledOrders;
+    public List<ExternalSystemOrderRecord> FilledOrders() => _filledOrders;
 
     public Order PlaceOrder(OrderDto order)
     {
